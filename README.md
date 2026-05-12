@@ -10,6 +10,26 @@
 - SQLAlchemy 2.0 (async)
 - Docker / Docker Compose
 - Pydantic
+- 
+## Запуск и остановка
+
+Запуск проекта
+
+docker compose up --build
+
+После запуска сервис будет доступен:
+
+API: http://localhost:8000
+
+Swagger документация: http://localhost:8000/docs
+
+Остановка проекта
+
+docker compose down
+
+Остановка с удалением данных БД
+
+docker compose down -v
 
 ## Структура проекта
 
@@ -49,21 +69,5 @@ library_2.0/
         ├── books.py        # /books/*
         └── issues.py       # /issues/*
 
-Запуск и остановка
-Запуск проекта
-bash
-docker compose up --build
-После запуска сервис будет доступен:
-
-API: http://localhost:8000
-
-Swagger документация: http://localhost:8000/docs
-
-Остановка проекта
-bash
-docker compose down
-Остановка с удалением данных БД
-bash
-docker compose down
 
 
