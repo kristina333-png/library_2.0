@@ -1,23 +1,23 @@
 from fastapi import HTTPException
 from sqlalchemy import select
-from app.database import AsyncSessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Author
 from app.schemas import AuthorCreate, AuthorUpdate
 
 
-async def get_all_authors(db: AsyncSessionLocal, skip: int = 0, limit: int = 100):
+async def get_all_authors(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(select(Author).offset(skip).limit(limit))
     return result.scalars().all()
 
 
-async def get_author_by_id(db: AsyncSessionLocal, author_id: int):
+async def get_author_by_id(db: AsyncSession, author_id: int):
     author = await db.get(Author, author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
     return author
 
 
-async def create_author(db: AsyncSessionLocal, author_data: AuthorCreate):
+async def create_author(db: AsyncSession, author_data: AuthorCreate):
     new_author = Author(
         full_name=author_data.full_name,
         birth_year=author_data.birth_year,
@@ -29,7 +29,7 @@ async def create_author(db: AsyncSessionLocal, author_data: AuthorCreate):
     return new_author
 
 
-async def update_author(db: AsyncSessionLocal, author_id: int, author_data: AuthorUpdate):
+async def update_author(db: AsyncSession, author_id: int, author_data: AuthorUpdate):
     author = await db.get(Author, author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
@@ -46,13 +46,17 @@ async def update_author(db: AsyncSessionLocal, author_id: int, author_data: Auth
     return author
 
 
-async def delete_author(db: AsyncSessionLocal, author_id: int):
+async def delete_author(db: AsyncSession, author_id: int):
     author = await db.get(Author, author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
 
-    # Загружаем книги автора
-    await db.refresh(author, attribute_names=["books"])
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Author).where(Author.id == author_id).options(selectinload(Author.books))
+    )
+    author = result.scalar_one()
+
     if author.books and len(author.books) > 0:
         raise HTTPException(status_code=409, detail="Нельзя удалить автора с книгами")
 

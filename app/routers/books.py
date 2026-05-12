@@ -21,7 +21,8 @@ async def create_book(
 async def get_books(
     author_id: Optional[int] = Query(None, description="Фильтр по ID автора"),
     published_year: Optional[int] = Query(None, description="Фильтр по году публикации"),
-    title_search: Optional[str] = Query(None, description="Поиск по названию (частичное совпадение)"),
+    title_search: Optional[str] = Query(None,
+                                        description="Поиск по названию (частичное совпадение)"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
     db: AsyncSession = Depends(get_db)

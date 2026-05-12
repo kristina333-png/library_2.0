@@ -8,7 +8,7 @@ current_year = date.today().year
 
 class AuthorBase(BaseModel):
     full_name: str = Field(..., min_length=1)
-    birth_year: Optional[int] = Field(None, gt=1800, le=current_year)
+    birth_year: Optional[int] = Field(None, gt=1500, le=current_year)
     country: Optional[str] = Field(None, min_length=1)
 
 

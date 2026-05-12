@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy import select
-from app.database import AsyncSessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Book, Author, Issue
 from app.schemas import BookCreate, BookUpdate
 
 
-async def get_all_books(db: AsyncSessionLocal,
+async def get_all_books(db: AsyncSession,
                         author_id: int = None,
                         published_year: int = None,
                         title_search: str = None,
@@ -25,14 +25,14 @@ async def get_all_books(db: AsyncSessionLocal,
     return result.scalars().all()
 
 
-async def get_book_by_id(db: AsyncSessionLocal, book_id: int):
+async def get_book_by_id(db: AsyncSession, book_id: int):
     book = await db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Книга не найдена")
     return book
 
 
-async def create_book(db: AsyncSessionLocal, book_data: BookCreate):
+async def create_book(db: AsyncSession, book_data: BookCreate):
     author = await db.get(Author, book_data.author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
@@ -42,7 +42,8 @@ async def create_book(db: AsyncSessionLocal, book_data: BookCreate):
         copies_available = book_data.copies_total
 
     if copies_available > book_data.copies_total:
-        raise HTTPException(status_code=400, detail="Доступных копий не может быть больше общего количества")
+        raise HTTPException(status_code=400,
+                            detail="Доступных копий не может быть больше общего количества")
 
     new_book = Book(
         title=book_data.title,
@@ -58,7 +59,7 @@ async def create_book(db: AsyncSessionLocal, book_data: BookCreate):
     return new_book
 
 
-async def update_book(db: AsyncSessionLocal, book_id: int, book_data: BookUpdate):
+async def update_book(db: AsyncSession, book_id: int, book_data: BookUpdate):
     book = await db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Книга не найдена")
@@ -69,7 +70,8 @@ async def update_book(db: AsyncSessionLocal, book_id: int, book_data: BookUpdate
         book.published_year = book_data.published_year
     if book_data.copies_total is not None:
         if book_data.copies_total < book.copies_available:
-            raise HTTPException(status_code=400, detail="Общее количество копий не может быть меньше доступных")
+            raise HTTPException(status_code=400,
+                                detail="Общее количество копий не может быть меньше доступных")
         book.copies_total = book_data.copies_total
 
     await db.commit()
@@ -77,7 +79,7 @@ async def update_book(db: AsyncSessionLocal, book_id: int, book_data: BookUpdate
     return book
 
 
-async def delete_book(db: AsyncSessionLocal, book_id: int):
+async def delete_book(db: AsyncSession, book_id: int):
     book = await db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Книга не найдена")
@@ -91,14 +93,15 @@ async def delete_book(db: AsyncSessionLocal, book_id: int):
     active_issue = result.scalar_one_or_none()
 
     if active_issue:
-        raise HTTPException(status_code=409, detail="Нельзя удалить книгу, которая выдана читателю")
+        raise HTTPException(status_code=409,
+                            detail="Нельзя удалить книгу, которая выдана читателю")
 
     await db.delete(book)
     await db.commit()
     return {"message": "Книга успешно удалена"}
 
 
-async def decrease_available_copies(db: AsyncSessionLocal, book_id: int):
+async def decrease_available_copies(db: AsyncSession, book_id: int):
     book = await db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Книга не найдена")
@@ -111,7 +114,7 @@ async def decrease_available_copies(db: AsyncSessionLocal, book_id: int):
     return book
 
 
-async def increase_available_copies(db: AsyncSessionLocal, book_id: int):
+async def increase_available_copies(db: AsyncSession, book_id: int):
     book = await db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Книга не найдена")

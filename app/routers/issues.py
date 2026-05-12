@@ -19,8 +19,9 @@ async def create_issue(
 @router.get("/", response_model=List[IssueResponse])
 async def get_issues(
         status: Optional[str] = Query(None,
-                                      description="active - активные, closed - закрытые, или не указывать для всех"),
-        borrower_name: Optional[str] = Query(None, description="Поиск по имени читателя (частичное совпадение)"),
+                                      description="active - активные, closed - закрытые, или не указывать"),
+        borrower_name: Optional[str] =
+        Query(None, description="Поиск по имени читателя (частичное совпадение)"),
         skip: int = Query(0, ge=0),
         limit: int = Query(100, ge=1, le=100),
         db: AsyncSession = Depends(get_db)
