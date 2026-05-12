@@ -13,7 +13,7 @@
 - Pydantic
 
 ## Структура проекта
-
+'''
 library_2.0/
 ├── docker-compose.yml
 ├── Dockerfile
@@ -46,7 +46,7 @@ library_2.0/
 ├── init.py
 ├── authors.py
 ├── books.py
-└── issues.py
+└── issues.py'''
 
 ## Быстрый старт
 
